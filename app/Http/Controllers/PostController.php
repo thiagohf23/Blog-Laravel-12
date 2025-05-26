@@ -15,8 +15,18 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::orderBy('created_at', 'DESC')->paginate(7);
+        $user = auth()->user();
 
+        $query = Post::with(['user', 'media'])
+            ->where('published_at', '<=', now())
+            ->withCount('claps')
+            ->latest();
+        if ($user) {
+            $ids = $user->following()->pluck('users.id');
+            $query->whereIn('user_id', $ids);
+        }
+
+        $posts = $query->simplePaginate(5);
         return view('post.index', [
             'posts' => $posts,
         ]);
@@ -38,11 +48,11 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        $data =$request->validate([
-            'image' => ['required','image','mimes:jpg,jpeg,png,gif,svg',],
+        $data = $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,gif,svg'],
             'title' => 'required',
             'content' => 'required',
-            'category_id' => ['required','exists:categories,id'],
+            'category_id' => ['required', 'exists:categories,id'],
             // 'published_at' => ['required','datetime'],
         ]);
 
@@ -62,9 +72,11 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Post $post)
+    public function show(string $username, Post $post)
     {
-        //
+        return view('post.show', [
+            'post' => $post,
+        ]);
     }
 
     /**
@@ -89,5 +101,14 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         //
+    }
+
+    public function category(Category $category)
+    {
+        $posts = $category->posts()->Paginate(5);
+
+        return view('post.index', [
+            'posts' => $posts,
+        ]);
     }
 }

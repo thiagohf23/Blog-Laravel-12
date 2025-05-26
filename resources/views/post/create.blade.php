@@ -4,7 +4,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg dark:bg-gray-800 text-zinc-200 p-8">
                 <form action="{{ route('post.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    {{-- File Upload Component --}}
+                    {{-- image --}}
                     <div>
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                             for="file_input">Upload file</label>
